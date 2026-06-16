@@ -281,3 +281,266 @@
   }
   requestAnimationFrame(frame);
 })();
+
+/* =========================================================
+   MLX LoRA Studio — Testimonials carousel
+   Auto-scrolling X / Twitter-style tweet carousel with:
+     - dot indicator (clickable, jumps to that slide)
+     - self-rescheduling auto-advance (resilient to browser
+       throttling on Safari, Edge, Firefox, mobile)
+     - pauses on hover, focus, and touch interaction
+     - auto-resumes after a configurable idle delay
+     - respects prefers-reduced-motion
+     - rAF-driven render so the slide is always centered,
+       even after the address bar shows/hides on iOS
+   The track is centered in the viewport and only one slide
+   is visible at a time; the rest sit off-screen until their
+   turn.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  // ---- Bail out cleanly on very old browsers --------------------------
+  if (!document.querySelector || !window.requestAnimationFrame) return;
+
+  const root = document.querySelector("[data-carousel]");
+  if (!root) return;
+
+  const viewport = root.querySelector("[data-carousel-viewport]");
+  const track    = root.querySelector("[data-carousel-track]");
+  const dotsHost = root.querySelector("[data-carousel-dots]");
+  const slides   = Array.from(track.querySelectorAll("[data-carousel-slide]"));
+
+  if (!viewport || !track || slides.length === 0) return;
+
+  // ---- Build dot indicator ---------------------------------------------
+  const dots = slides.map((_, i) => {
+    const li  = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "carousel__dot";
+    btn.setAttribute("aria-label", `Show tweet ${i + 1} of ${slides.length}`);
+    btn.setAttribute("aria-selected", i === 0 ? "true" : "false");
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      goTo(i, true);
+    });
+    li.appendChild(btn);
+    dotsHost.appendChild(li);
+    return btn;
+  });
+
+  // ---- State -----------------------------------------------------------
+  let index = 0;             // active slide
+  let autoTimer = null;      // pending setTimeout id (self-rescheduling)
+  let autoPaused = false;    // user is interacting right now
+  let prefersReducedMotion = false;
+  const AUTO_MS = 5500;      // ms between auto-advances
+  const RESUME_MS = 1800;    // ms after interaction before auto-advance resumes
+
+  const motionMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
+  prefersReducedMotion = motionMQ.matches;
+  // Some older Safari builds don't dispatch change events on the MQ
+  // object directly — listen to both for safety.
+  const onMotionChange = (e) => { prefersReducedMotion = e.matches; };
+  if (typeof motionMQ.addEventListener === "function") {
+    motionMQ.addEventListener("change", onMotionChange);
+  } else if (typeof motionMQ.addListener === "function") {
+    motionMQ.addListener(onMotionChange);
+  }
+
+  // ---- Layout helpers --------------------------------------------------
+  // Read a CSS custom property from the .carousel element (e.g. --slide-w).
+  function getSlideWidth() {
+    const raw = getComputedStyle(root).getPropertyValue("--slide-w").trim();
+    const v = parseFloat(raw);
+    return Number.isFinite(v) ? v : viewport.clientWidth;
+  }
+  function getGap() {
+    const raw = getComputedStyle(root).getPropertyValue("--gap").trim();
+    const v = parseFloat(raw);
+    return Number.isFinite(v) ? v : 0;
+  }
+  // Width of the viewport's *content box* (excludes padding), so centering
+  // math is correct regardless of box-sizing or padding.
+  function getViewportContentWidth() {
+    const cs = getComputedStyle(viewport);
+    const padL = parseFloat(cs.paddingLeft)  || 0;
+    const padR = parseFloat(cs.paddingRight) || 0;
+    // Prefer the content rect (border-box aware), fall back to clientWidth.
+    const rect = viewport.getBoundingClientRect();
+    const w = rect.width || viewport.clientWidth;
+    return Math.max(0, w - padL - padR);
+  }
+
+  // ---- Render ----------------------------------------------------------
+  // Center the active slide inside the viewport's content box.
+  function render() {
+    const w   = getSlideWidth();
+    const gap = getGap();
+    const vw  = getViewportContentWidth();
+
+    // distance from the track's left edge to the active slide's center
+    const slideCenter = index * (w + gap) + w / 2;
+    // we want slideCenter to land at vw/2
+    const offset = vw / 2 - slideCenter;
+
+    // Use both prefixed and standard for old WebKit.
+    track.style.transform = "translate3d(" + offset + "px, 0, 0)";
+    track.style.webkitTransform = track.style.transform;
+
+    slides.forEach((s, i) => {
+      s.setAttribute("aria-hidden", i === index ? "false" : "true");
+    });
+    dots.forEach((d, i) => {
+      d.setAttribute("aria-selected", i === index ? "true" : "false");
+    });
+  }
+
+  // ---- Navigation ------------------------------------------------------
+  function goTo(i, fromUser) {
+    const n = slides.length;
+    const next = ((i % n) + n) % n;  // safe modulo for any i
+    if (next === index) {
+      if (fromUser) scheduleResume();
+      return;
+    }
+    index = next;
+    render();
+    if (fromUser) scheduleResume();
+  }
+
+  // ---- Auto-advance (self-rescheduling) --------------------------------
+  // We use a self-rescheduling setTimeout instead of setInterval so that:
+  //   1. Safari/Edge throttling can't permanently desync the cadence
+  //   2. Visibility / hover pauses cancel cleanly without a stale tick
+  //   3. A new schedule can be armed with a different delay (e.g. resume)
+  function scheduleNext(delay) {
+    cancelAuto();
+    if (prefersReducedMotion)        return;
+    if (autoPaused)                  return;
+    if (document.hidden)             return;
+    if (slides.length < 2)           return;
+    const wait = typeof delay === "number" ? delay : AUTO_MS;
+    autoTimer = window.setTimeout(() => {
+      autoTimer = null;
+      // Guard against the tab being hidden while we slept.
+      if (document.hidden || autoPaused) return;
+      goTo(index + 1, false);
+      scheduleNext();  // chain the next tick
+    }, wait);
+  }
+  function cancelAuto() {
+    if (autoTimer !== null) {
+      clearTimeout(autoTimer);
+      autoTimer = null;
+    }
+  }
+  // Resume after a short idle so people can read the slide they
+  // jumped to without it immediately moving on.
+  function scheduleResume() {
+    cancelAuto();
+    autoPaused = true;
+    window.setTimeout(() => {
+      autoPaused = false;
+      scheduleNext(AUTO_MS);
+    }, RESUME_MS);
+  }
+
+  // ---- Pause on interaction --------------------------------------------
+  // Use a single "paused" flag + timers instead of paired enter/leave
+  // listeners, so a missed event can never leave us stuck off.
+  let pauseTimer = null;
+  function pauseForInteraction(ms) {
+    autoPaused = true;
+    cancelAuto();
+    if (pauseTimer) clearTimeout(pauseTimer);
+    pauseTimer = window.setTimeout(() => {
+      autoPaused = false;
+      pauseTimer = null;
+      scheduleNext(AUTO_MS);
+    }, ms);
+  }
+
+  // Mouse: pause on hover, resume on leave.
+  // `mouseenter`/`mouseleave` don't bubble, so we listen on root directly.
+  root.addEventListener("mouseenter", () => pauseForInteraction(RESUME_MS));
+  root.addEventListener("mouseleave", () => {
+    if (pauseTimer) { clearTimeout(pauseTimer); pauseTimer = null; }
+    autoPaused = false;
+    scheduleNext(AUTO_MS);
+  });
+
+  // Touch / pen: pause while the pointer is down, resume on release.
+  // We intentionally don't pause on plain `pointerdown` anymore — that
+  // was firing on any click and never resuming, killing auto-advance.
+  root.addEventListener("pointerdown",   () => pauseForInteraction(RESUME_MS + 2000));
+  root.addEventListener("pointerup",     () => {
+    if (pauseTimer) { clearTimeout(pauseTimer); pauseTimer = null; }
+    autoPaused = false;
+    scheduleNext(AUTO_MS);
+  });
+  root.addEventListener("pointercancel", () => {
+    if (pauseTimer) { clearTimeout(pauseTimer); pauseTimer = null; }
+    autoPaused = false;
+    scheduleNext(AUTO_MS);
+  });
+
+  // Focus-within: pause while keyboard users are tabbing through the dots.
+  root.addEventListener("focusin",  () => pauseForInteraction(RESUME_MS + 1500));
+  root.addEventListener("focusout", () => {
+    // focusout fires for every child; only resume when focus leaves the
+    // carousel entirely.
+    window.setTimeout(() => {
+      if (!root.contains(document.activeElement)) {
+        if (pauseTimer) { clearTimeout(pauseTimer); pauseTimer = null; }
+        autoPaused = false;
+        scheduleNext(AUTO_MS);
+      }
+    }, 0);
+  });
+
+  // Visibility: hidden tabs must NOT run our timer. We re-arm on resume.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      cancelAuto();
+    } else if (!autoPaused) {
+      scheduleNext(AUTO_MS);
+    }
+  });
+
+  // ---- Re-render on resize / orientation change -----------------------
+  // Use both rAF and a small debounce so rapid resize events (iOS
+  // address-bar show/hide) still produce a correct centering.
+  let resizeRaf = 0;
+  let resizeTimer = 0;
+  function onResize() {
+    cancelAnimationFrame(resizeRaf);
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeRaf = requestAnimationFrame(render);
+    resizeTimer = window.setTimeout(render, 150);
+  }
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", onResize);
+
+  // Re-render once webfonts settle — the slide width can change.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(render).catch(() => {});
+  }
+
+  // ---- Boot ------------------------------------------------------------
+  // Don't run at all in browsers that don't support the features we need.
+  if (prefersReducedMotion) {
+    // Still render once so the first slide is visible; just no auto-advance.
+    render();
+    return;
+  }
+
+  // Defer the initial schedule to the next frame so the browser has
+  // finished layout. This avoids a race on first paint where the
+  // slide width is still 0.
+  requestAnimationFrame(() => {
+    render();
+    scheduleNext(AUTO_MS);
+  });
+})();

@@ -964,6 +964,268 @@ a {
 }
 
 /* =========================================================
+   TESTIMONIALS — X / Twitter carousel
+   ========================================================= */
+.testimonials {
+  position: relative;
+}
+
+.carousel {
+  --slide-w: 520px;
+  --gap: 24px;
+  position: relative;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.carousel__viewport {
+  overflow: hidden;
+  border-radius: 22px;
+  outline: none;
+  padding: 8px 4px;          /* breathing room for hover lift */
+}
+
+.carousel__viewport:focus-visible {
+  box-shadow: 0 0 0 3px rgba(209, 92, 15, 0.35);
+}
+
+.carousel__track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--gap);
+  /* JS positions each slide centered by setting transform inline.
+     The transition here is for auto-advance, not drag. */
+  -webkit-transition: -webkit-transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.carousel__track > .tweet {
+  flex: 0 0 var(--slide-w);
+  scroll-snap-align: center;
+}
+
+/* ----- Tweet card ----- */
+.tweet {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 22px 16px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  user-select: none;
+}
+
+.tweet:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40);
+  border-color: rgba(255, 255, 255, 0.40);
+}
+
+.tweet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-rim);
+  -webkit-mask: linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.85;
+}
+
+.tweet__head {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.tweet__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass-tint);
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.tweet__id {
+  min-width: 0;
+}
+
+.tweet__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}
+
+.tweet__verified {
+  flex: 0 0 auto;
+}
+
+.tweet__handle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.tweet__body {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  word-break: break-word;
+}
+
+.tweet__body em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.tweet__platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px 4px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  border: 1px solid var(--line);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+}
+
+.tweet__platform svg {
+  flex: 0 0 auto;
+}
+
+.tweet__platform--x {
+  color: var(--ink);
+}
+
+.tweet__platform--yt {
+  color: #d8001f;
+  border-color: rgba(255, 0, 0, 0.25);
+  background: rgba(255, 0, 0, 0.06);
+}
+
+.tweet__platform--gh {
+  color: var(--ink);
+  background: var(--glass-bg-strong);
+}
+
+.tweet__platform--hn {
+  color: #ff6600;
+  border-color: rgba(255, 102, 0, 0.30);
+  background: rgba(255, 102, 0, 0.08);
+}
+
+/* ----- Controls ----- */
+.carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.carousel__dots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted-2);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.2s ease, transform 0.2s ease, width 0.25s ease;
+}
+
+.carousel__dot[aria-selected="true"] {
+  opacity: 1;
+  width: 24px;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.carousel__dot:hover {
+  opacity: 0.85;
+}
+
+.carousel__dot:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(209, 92, 15, 0.35);
+}
+
+.testimonials__fineprint {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 13px;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 720px) {
+  .carousel {
+    --slide-w: calc(100vw - 48px);
+  }
+  .tweet {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel__track {
+    transition: none;
+  }
+  .tweet,
+  .carousel__dot {
+    transition: none;
+  }
+}
+
+/* =========================================================
    CTA
    ========================================================= */
 .cta {
