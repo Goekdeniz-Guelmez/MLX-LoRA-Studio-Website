@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MLX LoRA Studio — Fine-tune LLMs on your Mac</title>
+    <meta
+      name="description"
+      content="A native macOS app for fine-tuning large language models on Apple Silicon. Local, private, open source. SFT, DPO, CPO, ORPO, GRPO, PPO and more — with LoRA, DoRA, QLoRA and QAT."
+    />
+    <meta name="theme-color" content="#0a0605" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+    <meta property="og:title" content="MLX LoRA Studio" />
+    <meta
+      property="og:description"
+      content="A native macOS app for fine-tuning LLMs on Apple Silicon — fully on-device, fully open source."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/img/logo.png" />
+    <link rel="icon" type="image/png" href="./assets/img/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- ========== EMBER SKY (canvas) ========== -->
+    <canvas id="ember-sky" aria-hidden="true"></canvas>
+    <div id="ember-scrim" aria-hidden="true"></div>
+
+    <!-- ========== NAV ========== -->
+    <header class="nav" id="top">
+      <div class="container nav__inner">
+        <a class="nav__brand" href="#top" aria-label="MLX LoRA Studio">
+          <img
+            src="./assets/img/logo.png"
+            alt=""
+            class="nav__logo"
+            width="32"
+            height="32"
+          />
+          <span>MLX LoRA Studio</span>
+        </a>
+        <nav class="nav__links" aria-label="Primary">
+          <a href="#features">Features</a>
+          <a href="#tour">Tour</a>
+          <a href="#algorithms">Algorithms</a>
+          <a href="#requirements">Requirements</a>
+          <a href="#install">Install</a>
+        </nav>
+        <div class="nav__cta">
+          <a
+            class="btn btn--ghost"
+            href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              aria-hidden="true"
+              fill="currentColor"
+            >
+              <path
+                d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5Z"
+              />
+            </svg>
+            GitHub
+          </a>
+          <a class="btn btn--primary" href="./assets/MLX-LoRA-Studio-1.0.0.dmg" download>Download</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========== HERO ========== -->
+    <section class="hero">
+      <div class="container hero__inner">
+        <h1 class="hero__title">
+          Fine-tune LLMs on your Mac.<br />
+          <span class="grad">Local. Private. Native.</span>
+        </h1>
+        <p class="hero__sub">
+          MLX LoRA Studio turns model fine-tuning into a normal Mac app. Pick a
+          model, choose an algorithm, watch the loss fall — all on-device, with
+          no cloud, no Jupyter, no mystery.
+        </p>
+        <div class="hero__cta">
+          <a
+            class="btn btn--primary btn--lg"
+            href="./assets/MLX-LoRA-Studio-1.0.0.dmg"
+            download
+          >
+            Download for macOS
+          </a>
+          <a
+            class="btn btn--ghost btn--lg"
+            href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio"
+            target="_blank"
+            rel="noopener"
+          >
+            View on GitHub →
+          </a>
+        </div>
+        <ul class="hero__meta">
+          <li><strong>macOS 14+</strong></li>
+          <li><strong>Apple Silicon</strong></li>
+          <li><strong>MIT License</strong></li>
+        </ul>
+        <div class="macos-window">
+          <div class="macos-window__chrome">
+            <div class="macos-window__lights" aria-hidden="true">
+              <!-- <span class="dot dot--red"></span>
+              <span class="dot dot--yellow"></span>
+              <span class="dot dot--green"></span> -->
+            </div>
+            <div class="macos-window__title">
+              <span class="macos-window__title-text">MLX LoRA Studio</span>
+            </div>
+            <div class="macos-window__lights-spacer" aria-hidden="true"></div>
+          </div>
+          <div class="macos-window__body">
+            <img
+              src="./assets/img/app_train_active.png"
+              alt="MLX LoRA Studio — Train tab with a live fine-tuning run"
+              loading="eager"
+              width="1600"
+              height="1000"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== LOGOS / TRUST STRIP ========== -->
+    <section class="strip">
+      <div class="container strip__inner">
+        <span>Built on</span>
+        <div class="strip__pill">Apple MLX</div>
+        <div class="strip__pill">Hugging Face</div>
+        <div class="strip__pill">SwiftUI · AppKit</div>
+        <div class="strip__pill">mlx-lm-lora</div>
+        <div class="strip__pill">Python</div>
+      </div>
+    </section>
+
+    <!-- ========== FEATURES ========== -->
+    <section class="section" id="features">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">Features</p>
+          <h2>Everything you need to fine-tune, watch, and ship.</h2>
+          <p class="section__lede">
+            Nine algorithms, four adapter types, live metrics, synthetic data,
+            and a one-click path to the Hugging Face Hub — all in one window.
+          </p>
+        </header>
+
+        <div class="grid grid--3">
+          <article class="card">
+            <div class="card__icon">🧠</div>
+            <h3>9 training algorithms</h3>
+            <p>
+              SFT, DPO, CPO, ORPO, GRPO, Online DPO, XPO, RLHF Reinforce, and
+              PPO. Pick by use case, not by which one happens to be wired up.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🧩</div>
+            <h3>Every adapter type</h3>
+            <p>
+              LoRA, DoRA, QLoRA at 4/6/8-bit, full fine-tuning, and
+              <strong>Quantization-Aware Training (QAT)</strong> for SFT, DPO,
+              and ORPO.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">📊</div>
+            <h3>Live observability</h3>
+            <p>
+              Loss, learning rate, gradient norm, throughput, and a scrolling
+              log — all streaming from the trainer, step by step.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🧪</div>
+            <h3>Synthetic data</h3>
+            <p>
+              Generate prompts, SFT pairs, and DPO triples from local models,
+              preview them in-app, and feed them straight into a training run.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🚀</div>
+            <h3>One-click HF upload</h3>
+            <p>
+              Push a finished adapter to the Hub with a model card, license, and
+              tags. No scripts, no token juggling.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🛡</div>
+            <h3>ResourceGuard</h3>
+            <p>
+              Watches the OS memory pressure signals and refuses to start a job
+              the system can't fit — with a clear human-readable reason.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🐍</div>
+            <h3>Python, handled</h3>
+            <p>
+              Studio finds an existing venv that has the trainer installed, or
+              provisions one for you. No “I forgot to install the deps” loop.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">📚</div>
+            <h3>Built-in algorithm guide</h3>
+            <p>
+              A reference for every supported algorithm — what it is, when to
+              use it, and the failure modes to watch for.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card__icon">🗂</div>
+            <h3>Runs archive</h3>
+            <p>
+              Every run, its YAML, and its adapter are kept locally — re-run,
+              resume, or upload them in a click from the Runs tab.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== GUIDED TOUR ========== -->
+    <section class="section section--alt" id="tour">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">A guided tour</p>
+          <h2>Seven screens. One workflow.</h2>
+          <p class="section__lede">
+            The app is organised around a sidebar — each section maps to a
+            single screen in the detail pane. The whole loop lives in one
+            window.
+          </p>
+        </header>
+
+        <div class="tour">
+          <div class="tour__row">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_train_active.png"
+                alt="Train tab with a fine-tuning run in progress"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">01 · Train</p>
+              <h3>The heart of the app.</h3>
+              <p>
+                Model &amp; data, adapter shape, optimization, algorithm-specific
+                fields, and resume/output — all in one form, with a live memory
+                estimate at the bottom.
+              </p>
+              <ul class="check">
+                <li>Pick a base model + dataset from your HF cache</li>
+                <li>Switch between LoRA, DoRA, QLoRA, full, QAT</li>
+                <li>See the projected memory cost change as you tune</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tour__row tour__row--reverse">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_live_metrics.png"
+                alt="Live metrics panel showing loss and learning rate"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">02 · Live Metrics</p>
+              <h3>Watch it learn.</h3>
+              <p>
+                A second-by-second view of what the runner is doing — loss /
+                reward / KL over the last N steps, tokens per second, and a
+                scrolling console for when something looks off.
+              </p>
+              <ul class="check">
+                <li>Refreshable loss / LR / grad-norm plot</li>
+                <li>Throughput + elapsed time at a glance</li>
+                <li>Pause, resume, or stop from the toolbar</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tour__row">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_symthetic_data.png"
+                alt="Synthetic data generation screen"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">03 · Synthetic Data</p>
+              <h3>Bootstrap your dataset with local models.</h3>
+              <p>
+                Three sub-modes, all driven by models on your Mac: prompt
+                generation, SFT pair generation, and DPO preference generation.
+                Preview in-app, export to JSONL, and feed it back into Train.
+              </p>
+              <ul class="check">
+                <li>Prompts · SFT pairs · DPO triples</li>
+                <li>Teacher / judge models from your HF cache</li>
+                <li>JSONL output that any training tab accepts</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tour__row tour__row--reverse">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_upload.png"
+                alt="Hugging Face upload screen"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">04 · Upload to HF</p>
+              <h3>One click to the Hub.</h3>
+              <p>
+                A guided form for pushing a finished adapter to the Hugging
+                Face Hub — repository name, visibility, license, model card
+                fields, and token source. One Push button.
+              </p>
+              <ul class="check">
+                <li>Public or private, with a real model card</li>
+                <li>Token from env, keychain, or paste</li>
+                <li>Step-by-step progress feed + final URL</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tour__row">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_algorythm_guide.png"
+                alt="Algorithm guide reference screen"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">05 · Algorithm Guide</p>
+              <h3>The whole field, in plain words.</h3>
+              <p>
+                A built-in reference for all 9 supported algorithms. Each entry
+                covers what it is, when to use it, the key hyperparameters, and
+                the failure modes to watch for.
+              </p>
+              <ul class="check">
+                <li>“SFT first, then DPO” ladder explained</li>
+                <li>What goes wrong when β is too high or group size too small</li>
+                <li>How QAT differs from QLoRA</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tour__row tour__row--reverse">
+            <div class="tour__shot">
+              <img
+                src="./assets/img/app_runs.png"
+                alt="Runs archive table"
+                loading="lazy"
+              />
+            </div>
+            <div class="tour__copy">
+              <p class="eyebrow">06 · Runs</p>
+              <h3>Every run, on file.</h3>
+              <p>
+                A table of every run Studio has ever done, sorted by recency.
+                Status, algorithm, base model, dataset, last loss, duration.
+                Open it back into the form, resume from the adapter, upload to
+                HF, or reveal in Finder.
+              </p>
+              <ul class="check">
+                <li>Full YAML config for every run</li>
+                <li>Resume a new run from any saved adapter</li>
+                <li>Kept under <code>~/Library/Application Support/MLXLoRAStudio/runs/</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ALGORITHMS ========== -->
+    <section class="section" id="algorithms">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">Supported training methods</p>
+          <h2>The whole ladder, from SFT to PPO.</h2>
+          <p class="section__lede">
+            All combinations are exposed in the Train tab's adapter section.
+            Mirrored from the underlying
+            <a
+              href="https://github.com/Goekdeniz-Guelmez/mlx-lm-lora"
+              target="_blank"
+              rel="noopener"
+              >mlx-lm-lora</a
+            >
+            trainer.
+          </p>
+        </header>
+
+        <div class="grid grid--2 algo">
+          <div class="algo__group">
+            <p class="eyebrow">Supervised fine-tuning</p>
+            <ul class="algo__list">
+              <li><span>SFT</span> Supervised fine-tuning on prompt/completion pairs</li>
+            </ul>
+          </div>
+          <div class="algo__group">
+            <p class="eyebrow">Preference</p>
+            <ul class="algo__list">
+              <li><span>DPO</span> Direct Preference Optimization</li>
+              <li><span>CPO</span> Contrastive Preference Optimization</li>
+              <li><span>ORPO</span> Odds Ratio Preference Optimization</li>
+            </ul>
+          </div>
+          <div class="algo__group">
+            <p class="eyebrow">RL &amp; online</p>
+            <ul class="algo__list">
+              <li><span>GRPO</span> Grouped Reinforcement Preference Optimization</li>
+              <li><span>Online DPO</span> Online preference updates</li>
+              <li><span>XPO</span> Exploratory Preference Optimization</li>
+              <li><span>RLHF Reinforce</span> REINFORCE-style reward modelling</li>
+              <li><span>PPO</span> Proximal Policy Optimization</li>
+            </ul>
+          </div>
+          <div class="algo__group">
+            <p class="eyebrow">Adapter types</p>
+            <ul class="algo__list">
+              <li><span>LoRA</span> Low-rank adapters with configurable rank/alpha</li>
+              <li><span>DoRA</span> Weight-decomposed LoRA</li>
+              <li><span>QLoRA</span> Quantized base (4 / 6 / 8-bit) + LoRA</li>
+              <li><span>Full FT</span> Train all parameters</li>
+              <li><span>QAT</span> Quantization-Aware Training (SFT / DPO / ORPO)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== HOW IT WORKS ========== -->
+    <section class="section section--alt">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">Under the hood</p>
+          <h2>What runs when you press Run.</h2>
+          <p class="section__lede">
+            A small Swift side, a small Python side, and the same trainer you
+            can run from the CLI. They talk over a line-delimited JSON
+            protocol — no polling, no magic.
+          </p>
+        </header>
+
+        <div class="how">
+          <ol class="how__steps">
+            <li>
+              <span class="how__num">1</span>
+              <div>
+                <h3>SwiftUI app</h3>
+                <p>
+                  The form is a <em>view</em> over a YAML config. The same
+                  config can be exported and re-run on the CLI.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="how__num">2</span>
+              <div>
+                <h3>PythonJobRunner</h3>
+                <p>
+                  A subprocess wrapper that streams stdout line by line back to
+                  the Swift side, plus live memory monitoring.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="how__num">3</span>
+              <div>
+                <h3>mlx-lm-lora</h3>
+                <p>
+                  The actual trainer — vendored at
+                  <code>vendor/mlx-lm-lora/</code>, the same code the CLI uses.
+                  MLX-native, fused-metal on Apple Silicon.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== REQUIREMENTS ========== -->
+    <section class="section" id="requirements">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">Requirements</p>
+          <h2>Made for Apple Silicon Macs.</h2>
+          <p class="section__lede">
+            MLX LoRA Studio depends on
+            <a
+              href="https://github.com/ml-explore/mlx"
+              target="_blank"
+              rel="noopener"
+              >Apple's MLX</a
+            >
+            framework, which is Apple Silicon–only.
+          </p>
+        </header>
+
+        <div class="req">
+          <ul class="req__list">
+            <li>
+              <span>OS</span>
+              <strong>macOS 14 (Sonoma) or later</strong>
+            </li>
+            <li>
+              <span>Chip</span>
+              <strong>Apple Silicon — M1 / M2 / M3 / M4 family</strong>
+            </li>
+            <li>
+              <span>RAM</span>
+              <strong>16 GB minimum · 24 GB+ recommended for ≥13B models</strong>
+            </li>
+            <li>
+              <span>Disk</span>
+              <strong>~5 GB for the app + a per-model HF cache</strong>
+            </li>
+            <li>
+              <span>Python</span>
+              <strong>Bundled — system Python not required</strong>
+            </li>
+          </ul>
+
+          <div class="req__memory">
+            <p class="eyebrow">Memory expectations</p>
+            <p class="muted">
+              Approximate, batch_size 2, 2048-token sequences.
+            </p>
+            <div class="table">
+              <div class="table__head">
+                <span>Base model</span>
+                <span>LoRA r=16</span>
+                <span>QLoRA 4-bit</span>
+                <span>Full FT</span>
+              </div>
+              <div class="table__row">
+                <span>1B–3B</span><span>8 GB</span><span>5 GB</span><span>12 GB</span>
+              </div>
+              <div class="table__row">
+                <span>7B–8B</span><span>14 GB</span><span>7 GB</span><span>32 GB</span>
+              </div>
+              <div class="table__row">
+                <span>13B</span><span>22 GB</span><span>10 GB</span><span>56 GB</span>
+              </div>
+              <div class="table__row">
+                <span>70B</span><span>110 GB</span><span>38 GB</span><span>—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== INSTALL ========== -->
+    <section class="section section--alt" id="install">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow">Install</p>
+          <h2>Up and running in 60 seconds.</h2>
+        </header>
+
+        <div class="install">
+          <div class="install__col">
+            <h3>Option 1 — Download a release</h3>
+            <ol class="steps">
+              <li>
+                Click the <strong>Download</strong> button above — the DMG
+                downloads directly from this site.
+              </li>
+              <li>Open the downloaded <code>MLX-LoRA-Studio.dmg</code>.</li>
+              <li>Drag <strong>MLX LoRA Studio</strong> to <code>/Applications</code>.</li>
+              <li>Launch it from <code>/Applications</code> or Spotlight.</li>
+              <li>
+                On first launch, allow the bundled Python helper in
+                <strong>System Settings → Privacy &amp; Security</strong>
+                (Gatekeeper).
+              </li>
+            </ol>
+            <p class="muted">
+              The first time you start a run, Studio will discover or provision
+              a Python environment with the right dependencies — no terminal
+              needed.
+            </p>
+            <div class="install__cta">
+              <a
+                class="btn btn--primary btn--lg"
+                href="./assets/MLX-LoRA-Studio-1.0.0.dmg"
+                download
+                >Download the DMG →</a
+              >
+            </div>
+          </div>
+
+          <div class="install__col">
+            <h3>Option 2 — Build it yourself</h3>
+            <p class="muted">
+              Requires the Xcode command-line tools (Swift 5.9+, macOS 14+ SDK).
+            </p>
+<pre class="code"><code><span class="c"># Clone the repo</span>
+git clone https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio.git
+cd MLX-LoRA-Studio
+
+<span class="c"># Build + run the app</span>
+./script/build_and_run.sh
+
+<span class="c"># Build a release .dmg</span>
+./script/build_and_run.sh --package</code></pre>
+            <p class="muted">
+              The output <code>.app</code> is fully self-contained — you can
+              copy it to another Mac and it will still run.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CTA ========== -->
+    <section class="cta">
+      <div class="container cta__inner">
+        <h2>Fine-tune on your Mac tonight.</h2>
+        <p>Open source, MIT-licensed, and built for the chip in front of you.</p>
+        <div class="cta__row">
+          <a class="btn btn--primary btn--lg" href="./assets/MLX-LoRA-Studio-1.0.0.dmg" download>Download Studio</a>
+          <a
+            class="btn btn--ghost btn--lg"
+            href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio"
+            target="_blank"
+            rel="noopener"
+            >Star on GitHub →</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div class="footer__brand">
+          <img src="./assets/img/logo.png" alt="" width="28" height="28" />
+          <div>
+            <strong>MLX LoRA Studio</strong>
+            <p class="muted">Fine-tune LLMs on your Mac.</p>
+          </div>
+        </div>
+        <div class="footer__cols">
+          <div>
+            <h4>Project</h4>
+            <a
+              href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio/releases"
+              target="_blank"
+              rel="noopener"
+              >Releases</a
+            >
+            <a
+              href="https://github.com/Goekdeniz-Guelmez/MLX-LoRA-Studio/blob/main/README.md"
+              target="_blank"
+              rel="noopener"
+              >README</a
+            >
+          </div>
+          <div>
+            <h4>Related</h4>
+            <a
+              href="https://github.com/Goekdeniz-Guelmez/mlx-lm-lora"
+              target="_blank"
+              rel="noopener"
+              >mlx-lm-lora</a
+            >
+            <a href="https://github.com/ml-explore/mlx" target="_blank" rel="noopener"
+              >Apple MLX</a
+            >
+            <a
+              href="https://github.com/ml-explore/mlx-lm"
+              target="_blank"
+              rel="noopener"
+              >mlx-lm</a
+            >
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <p class="muted">MIT License</p>
+            <p class="muted">© 2026 Gökdeniz Gülmez</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./script.js" defer></script>
+  </body>
+</html>
